@@ -129,24 +129,26 @@ select{font-family:var(--fn)}
 .legsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
 
-/* ── Comparison table ── */
-.cmp-table-wrap{overflow-x:auto;border-radius:var(--rx);border:1px solid var(--bd);margin-bottom:4px}
-.cmp-table{width:100%;border-collapse:collapse;min-width:680px}
-.cmp-table thead tr{background:var(--bg3);border-bottom:2px solid var(--bd2)}
-.th-barrio{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;min-width:145px}
-.tc{padding:9px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;min-width:90px}
-.th-sort{cursor:pointer;user-select:none;transition:background .12s;white-space:nowrap}
-.th-sort:hover{background:var(--bg4)}
-.cmp-table tbody tr{border-bottom:1px solid var(--bd);transition:background .12s}
-.cmp-table tbody tr:last-child{border-bottom:none}
-.cmp-table tbody tr:hover td{background:var(--bg3)}
-.td-barrio{padding:10px 16px;vertical-align:top}
-.barrio-label{font-size:13px;font-weight:600;color:var(--t1)}
-.cell-val{font-size:15px;font-weight:600;font-family:var(--mo);letter-spacing:-.02em;margin-bottom:3px}
-.cell-qty{font-size:14px;font-weight:500;font-family:var(--mo);letter-spacing:-.01em;margin-bottom:3px}
-.cell-sub{font-size:10px;color:var(--t3);margin-top:2px}
-.sbar{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:3px}
-.sfill{height:100%;border-radius:2px;transition:width .5s ease}
+/* ── Prices table ── */
+.ptable-wrap{overflow-x:auto;border-radius:var(--rx);border:1px solid var(--bd);margin-bottom:6px}
+.ptable{width:100%;border-collapse:collapse}
+.ptable thead tr{background:var(--bg3);border-bottom:2px solid var(--bd2)}
+.pth-b{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;min-width:145px;white-space:nowrap}
+.pth{padding:9px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.03em;cursor:pointer;user-select:none;transition:background .12s;white-space:nowrap;min-width:88px}
+.pth:hover{background:var(--bg4) !important}
+.pth-sub{font-weight:400;font-size:10px;color:var(--t3);text-transform:none;letter-spacing:0;margin-top:2px}
+.ptable tbody tr{border-bottom:1px solid var(--bd)}
+.ptable tbody tr:last-child{border-bottom:none}
+.ptable tbody tr:hover td{background:var(--bg3)}
+.ptd-b{padding:10px 16px;vertical-align:top}
+.ptd{padding:9px 10px;text-align:center;vertical-align:top}
+.pnm{font-size:13px;font-weight:600;color:var(--t1)}
+.psrc{font-size:10px;color:var(--t3);margin-top:3px}
+.pval{font-size:14px;font-weight:600;font-family:var(--mo);letter-spacing:-.02em;margin-bottom:3px;color:var(--t1)}
+.pqty{font-size:13px;font-weight:500;font-family:var(--mo);margin-bottom:3px}
+.psub{font-size:10px;color:var(--t3);margin-top:2px}
+.pbar{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:3px}
+.pfill{height:100%;border-radius:2px;transition:width .5s ease}
 </style>
 </head>
 <body>
@@ -352,136 +354,126 @@ function sorted(key) {
   return d;
 }
 
+
+
+
+
 function renderPrecios() {
-  if (!window.PSORT) window.PSORT = {col:"us", dir:"desc"};
+  if (!window.PS) window.PS = {col:"us", dir:"desc"};
+  var col = window.PS.col;
+  var dir = window.PS.dir;
+  var showUs = S.seg==="todos"||S.seg==="us";
+  var showEs = S.seg==="todos"||S.seg==="es";
+  var showPz = S.seg==="todos"||S.seg==="pz";
 
-  function sortData(data, col, dir) {
-    var d = data.slice();
-    d.sort(function(a,b){
-      var av,bv;
-      if(col==="us")    {av=a.us;    bv=b.us;}
-      else if(col==="es")    {av=a.es;    bv=b.es;}
-      else if(col==="tot")   {av=a.tot;   bv=b.tot;}
-      else if(col==="delta") {av=a.deltaN;bv=b.deltaN;}
-      else if(col==="esN")   {av=Math.round(a.tot*(1-0.60-a.pzPct/100));bv=Math.round(b.tot*(1-0.60-b.pzPct/100));}
-      else if(col==="usN")   {av=Math.round(a.tot*0.60);bv=Math.round(b.tot*0.60);}
-      else {av=a.us;bv=b.us;}
-      return dir==="desc" ? bv-av : av-bv;
-    });
-    return d;
-  }
+  var data = BARRIOS.slice().sort(function(a,b){
+    var getVal = function(x){
+      if(col==="us")    return x.us;
+      if(col==="es")    return x.es;
+      if(col==="pz")    return x.pz;
+      if(col==="delta") return x.deltaN;
+      if(col==="tot")   return x.tot;
+      if(col==="usN")   return Math.round(x.tot*0.60);
+      if(col==="esN")   return Math.round(x.tot*(1-0.60-x.pzPct/100));
+      if(col==="pzN")   return Math.round(x.tot*x.pzPct/100);
+      return x.us;
+    };
+    return dir==="desc" ? getVal(b)-getVal(a) : getVal(a)-getVal(b);
+  });
 
-  var col = window.PSORT.col;
-  var dir = window.PSORT.dir;
-  var data = sortData(BARRIOS, col, dir);
+  var maxUs=Math.max.apply(null,BARRIOS.map(function(b){return b.us;}));
+  var maxEs=Math.max.apply(null,BARRIOS.map(function(b){return b.es;}));
+  var maxPz=Math.max.apply(null,BARRIOS.map(function(b){return b.pz;}));
+  var maxTot=Math.max.apply(null,BARRIOS.map(function(b){return b.tot;}));
+  var maxDelta=Math.max.apply(null,BARRIOS.map(function(b){return b.deltaN;}));
 
-  var maxUs    = Math.max.apply(null,BARRIOS.map(function(b){return b.us;}));
-  var maxEs    = Math.max.apply(null,BARRIOS.map(function(b){return b.es;}));
-  var maxTot   = Math.max.apply(null,BARRIOS.map(function(b){return b.tot;}));
-  var maxDelta = Math.max.apply(null,BARRIOS.map(function(b){return b.deltaN;}));
-  var maxUsN   = Math.max.apply(null,BARRIOS.map(function(b){return Math.round(b.tot*0.60);}));
-  var maxEsN   = Math.max.apply(null,BARRIOS.map(function(b){return Math.round(b.tot*(1-0.60-b.pzPct/100));}));
-
-  function arrow(c) {
-    if (col!==c) return '<span style="opacity:.4"> ⇅</span>';
+  function arr(c){
+    if(col!==c) return '<span style="color:var(--t3);font-size:9px;margin-left:2px">⇅</span>';
     return dir==="desc"
-      ? '<span style="color:var(--g)"> ↓</span>'
-      : '<span style="color:var(--g)"> ↑</span>';
+      ? '<span style="color:var(--g);font-size:9px;margin-left:2px">↓</span>'
+      : '<span style="color:var(--g);font-size:9px;margin-left:2px">↑</span>';
   }
-  function thBtn(c, line1, line2) {
-    return '<th class="tc th-sort" onclick="psort(\'' + c + '\')">'
-      + line1 + arrow(c)
-      + (line2 ? '<div style="font-weight:400;font-size:10px;color:var(--t3);text-transform:none;letter-spacing:0;margin-top:2px">'+line2+'</div>' : '')
-      + '</th>';
+  function th(c,l1,l2){
+    return '<th class="pth" onclick="psort(\''+c+'\')">'
+      +l1+arr(c)
+      +(l2?'<div class="pth-sub">'+l2+'</div>':'')
+      +'</th>';
+  }
+  function pcell(val,max,color,sub){
+    return '<td class="ptd">'
+      +'<div class="pval" style="color:'+color+'">US$'+fmt(val)+'</div>'
+      +'<div class="pbar"><div class="pfill" style="width:'+Math.round(val/max*100)+'%;background:'+color+'"></div></div>'
+      +(sub?'<div class="psub">'+sub+'</div>':'')
+      +'</td>';
+  }
+  function qcell(val,max,color,sub){
+    return '<td class="ptd">'
+      +'<div class="pqty" style="color:'+color+'">'+fmt(val)+'</div>'
+      +'<div class="pbar"><div class="pfill" style="width:'+Math.max(Math.round(val/max*100),2)+'%;background:'+color+';opacity:.5"></div></div>'
+      +(sub?'<div class="psub">'+sub+'</div>':'')
+      +'</td>';
   }
 
-  var rows = data.map(function(b, idx) {
-    var rowBg = idx%2===0 ? "" : "background:rgba(255,255,255,0.025)";
-    var hotB = b.deltaN>=13
-      ? ' <span class="dbd dg" style="font-size:9px;padding:1px 5px">HOT</span>'
-      : b.deltaN>=9 ? ' <span class="dbd da" style="font-size:9px;padding:1px 5px">↑</span>' : "";
-
-    var usN = Math.round(b.tot * 0.60);
-    var pzN = Math.round(b.tot * b.pzPct/100);
-    var esN = b.tot - usN - pzN;
-
-    var usPct  = Math.round(b.us/maxUs*100);
-    var esPct  = Math.round(b.es/maxEs*100);
-    var usNPct = Math.round(usN/maxUsN*100);
-    var esNPct = Math.round(esN/maxEsN*100);
-    var totPct = Math.round(b.tot/maxTot*100);
-    var dPct   = Math.round(b.deltaN/maxDelta*100);
-    var dCol   = b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
-    var esDiff = "+"+Math.round((b.es/b.us-1)*100)+"% vs usado";
-
+  var rows = data.map(function(b,idx){
+    var usN=Math.round(b.tot*0.60);
+    var pzN=Math.round(b.tot*b.pzPct/100);
+    var esN=b.tot-usN-pzN;
+    var dCol=b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
+    var hot=b.deltaN>=13?' <span class="dbd dg" style="font-size:9px;padding:1px 5px">HOT</span>'
+            :b.deltaN>=9?' <span class="dbd da" style="font-size:9px;padding:1px 5px">↑</span>':'';
+    var rowBg=idx%2===0?'':'background:rgba(255,255,255,.022)';
+    var cells='';
+    if(showUs){
+      cells+=pcell(b.us,maxUs,C.us,'');
+      cells+=qcell(usN,maxTot*0.65,'#9aa3b8','~'+Math.round(usN/b.tot*100)+'% del total');
+    }
+    if(showEs){
+      cells+=pcell(b.es,maxEs,C.es,'+'+Math.round((b.es/b.us-1)*100)+'% vs usado');
+      cells+=qcell(esN,maxTot*0.35,C.es,'~'+Math.round(esN/b.tot*100)+'% del total');
+    }
+    if(showPz){
+      cells+=pcell(b.pz,maxPz,C.pz,b.pzOk?'+'+Math.round((b.pz/b.us-1)*100)+'% vs usado':'prom. CABA (*)');
+      cells+=qcell(pzN,maxTot*0.12,C.pz,b.pzPct+'% del total ZP');
+    }
     return '<tr style="'+rowBg+'">'
-      + '<td class="td-barrio">'
-          + '<span class="barrio-label">'+b.n+'</span>'+hotB
-          + '<div style="font-size:10px;color:var(--t3);margin-top:3px">'+b.fuente+'</div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-val">US$'+fmt(b.us)+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+usPct+'%;background:'+C.us+'"></div></div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-qty">'+fmt(usN)+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+usNPct+'%;background:rgba(93,104,128,.45)"></div></div>'
-          + '<div class="cell-sub">unidades</div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-val" style="color:'+C.es+'">US$'+fmt(b.es)+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+esPct+'%;background:'+C.es+'"></div></div>'
-          + '<div class="cell-sub">'+esDiff+'</div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-qty" style="color:rgba(77,159,255,.85)">'+fmt(esN)+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+esNPct+'%;background:rgba(77,159,255,.35)"></div></div>'
-          + '<div class="cell-sub">unidades</div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-val" style="color:var(--t2)">'+fmt(b.tot)+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+totPct+'%;background:rgba(255,255,255,.12)"></div></div>'
-        + '</td>'
-      + '<td class="tc">'
-          + '<div class="cell-val" style="color:'+dCol+'">'+b.delta+'</div>'
-          + '<div class="sbar"><div class="sfill" style="width:'+dPct+'%;background:'+dCol+'"></div></div>'
-          + '<div class="cell-sub">interanual</div>'
-        + '</td>'
-      + '</tr>';
-  }).join("");
+      +'<td class="ptd-b"><span class="pnm">'+b.n+'</span>'+hot+'<div class="psrc">'+b.fuente+'</div></td>'
+      +cells
+      +'<td class="ptd"><div class="pqty" style="color:var(--t2)">'+fmt(b.tot)+'</div>'
+        +'<div class="pbar"><div class="pfill" style="width:'+Math.round(b.tot/maxTot*100)+'%;background:rgba(255,255,255,.12)"></div></div></td>'
+      +'<td class="ptd"><div class="pval" style="color:'+dCol+'">'+b.delta+'</div>'
+        +'<div class="pbar"><div class="pfill" style="width:'+Math.round(b.deltaN/maxDelta*100)+'%;background:'+dCol+'"></div></div>'
+        +'<div class="psub">interanual</div></td>'
+      +'</tr>';
+  }).join('');
+
+  var hUs=showUs ? th('us','USD/m2 Usado','precio')+th('usN','Cant. Usado','uds. est.') : '';
+  var hEs=showEs ? th('es','USD/m2 Estrenar','precio')+th('esN','Cant. Estrenar','uds. est.') : '';
+  var hPz=showPz ? th('pz','USD/m2 Pozo','precio ZP')+th('pzN','Cant. Pozo','uds. est.') : '';
 
   return '<div class="kgrid">'
-      + kc("","Prom. CABA abr 2026","US$2.460/m2","+2,2% interanual","cup")
-      + kc("b","Mayor precio usado","Palermo","US$3.035/m2","cne")
-      + kc("a","Mayor suba","Villa Crespo","+18% interanual","cup")
-      + kc("","Estrenar vs usado","+28% prom CABA","brecha historica","cdn")
-    + '</div>'
-    + '<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Hacé clic en cualquier encabezado de columna para ordenar. Cantidades son estimadas (ZP no publica ese detalle por barrio).</div>'
-    + '<div class="cmp-table-wrap">'
-      + '<table class="cmp-table">'
-        + '<thead><tr>'
-          + '<th class="th-barrio">Barrio</th>'
-          + thBtn("us","USD/m2 Usado","precio publicado")
-          + thBtn("usN","Cant. Usado","unidades est.")
-          + thBtn("es","USD/m2 Estrenar","precio publicado")
-          + thBtn("esN","Cant. Estrenar","unidades est.")
-          + thBtn("tot","Total Oferta","todas las unidades")
-          + thBtn("delta","Suba 12m","interanual ZP")
-        + '</tr></thead>'
-        + '<tbody>'+rows+'</tbody>'
-      + '</table>'
-    + '</div>'
-    + disc();
+    +kc('','Prom. CABA abr 2026','US$2.460/m2','+2,2% interanual','cup')
+    +kc('b','Pozo CABA (ZP may25)','US$2.893/m2','+22% desde nov 2023','cup')
+    +kc('a','Mayor suba','Villa Crespo','+18% interanual','cup')
+    +kc('','Estrenar vs usado','+28% prom CABA','brecha historica','cdn')
+  +'</div>'
+  +'<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Clic en cualquier encabezado de columna para ordenar ↑↓ &nbsp;·&nbsp; Cantidades son estimadas (ZP no desglosa por barrio) &nbsp;·&nbsp; (*) Pozo = promedio CABA ZP may 2025</div>'
+  +'<div class="ptable-wrap"><table class="ptable">'
+    +'<thead><tr>'
+      +'<th class="pth-b">Barrio</th>'
+      +hUs+hEs+hPz
+      +th('tot','Total Oferta','todas uds. ZP')
+      +th('delta','Suba 12m','interanual')
+    +'</tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+  +'</table></div>'
+  +'<div style="font-size:11px;color:var(--t3);margin-top:8px">Pozo = precio de lista publicado en ZP. Ver modulo Developer para analisis financiero de proyectos en pozo.</div>'
+  +disc();
 }
 
 function psort(col) {
-  if (!window.PSORT) window.PSORT = {col:"us", dir:"desc"};
-  if (window.PSORT.col === col) {
-    window.PSORT.dir = window.PSORT.dir==="desc" ? "asc" : "desc";
-  } else {
-    window.PSORT.col = col;
-    window.PSORT.dir = "desc";
-  }
+  if (!window.PS) window.PS = {col:'us', dir:'desc'};
+  window.PS.dir = (window.PS.col===col && window.PS.dir==='desc') ? 'asc' : 'desc';
+  window.PS.col = col;
   renderContent();
 }
 
