@@ -130,20 +130,23 @@ select{font-family:var(--fn)}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
 
 /* ── Comparison table ── */
-.cmp-table-wrap{overflow-x:auto;border-radius:var(--rx);border:1px solid var(--bd);margin-bottom:16px}
-.cmp-table{width:100%;border-collapse:collapse;min-width:580px}
+.cmp-table-wrap{overflow-x:auto;border-radius:var(--rx);border:1px solid var(--bd);margin-bottom:4px}
+.cmp-table{width:100%;border-collapse:collapse;min-width:680px}
 .cmp-table thead tr{background:var(--bg3);border-bottom:2px solid var(--bd2)}
-.th-barrio{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;min-width:140px;white-space:nowrap}
-.tc{padding:10px 12px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;min-width:100px}
+.th-barrio{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;min-width:145px}
+.tc{padding:9px 10px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.04em;min-width:90px}
+.th-sort{cursor:pointer;user-select:none;transition:background .12s;white-space:nowrap}
+.th-sort:hover{background:var(--bg4)}
 .cmp-table tbody tr{border-bottom:1px solid var(--bd);transition:background .12s}
 .cmp-table tbody tr:last-child{border-bottom:none}
-.cmp-table tbody tr:hover{background:var(--bg3) !important}
+.cmp-table tbody tr:hover td{background:var(--bg3)}
 .td-barrio{padding:10px 16px;vertical-align:top}
 .barrio-label{font-size:13px;font-weight:600;color:var(--t1)}
-.cell-val{font-size:15px;font-weight:600;font-family:var(--mo);letter-spacing:-.02em;margin-bottom:4px}
-.cell-diff{font-size:10px;color:var(--t3);margin-top:3px}
-.spark-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
-.spark-fill{height:100%;border-radius:2px;transition:width .5s ease}
+.cell-val{font-size:15px;font-weight:600;font-family:var(--mo);letter-spacing:-.02em;margin-bottom:3px}
+.cell-qty{font-size:14px;font-weight:500;font-family:var(--mo);letter-spacing:-.01em;margin-bottom:3px}
+.cell-sub{font-size:10px;color:var(--t3);margin-top:2px}
+.sbar{height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;margin-top:3px}
+.sfill{height:100%;border-radius:2px;transition:width .5s ease}
 </style>
 </head>
 <body>
@@ -350,73 +353,136 @@ function sorted(key) {
 }
 
 function renderPrecios() {
-  var data = sorted(S.orden);
-  var showUs = S.seg==="todos"||S.seg==="us";
-  var showEs = S.seg==="todos"||S.seg==="es";
-  var showPz = S.seg==="todos"||S.seg==="pz";
+  if (!window.PSORT) window.PSORT = {col:"us", dir:"desc"};
 
-  // build header
-  var thCols = "";
-  if(showUs) thCols += '<th class="tc" style="color:'+C.us+'">Usado<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
-  if(showEs) thCols += '<th class="tc" style="color:'+C.es+'">A estrenar<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
-  if(showPz) thCols += '<th class="tc" style="color:'+C.pz+'">En pozo<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
+  function sortData(data, col, dir) {
+    var d = data.slice();
+    d.sort(function(a,b){
+      var av,bv;
+      if(col==="us")    {av=a.us;    bv=b.us;}
+      else if(col==="es")    {av=a.es;    bv=b.es;}
+      else if(col==="tot")   {av=a.tot;   bv=b.tot;}
+      else if(col==="delta") {av=a.deltaN;bv=b.deltaN;}
+      else if(col==="esN")   {av=Math.round(a.tot*(1-0.60-a.pzPct/100));bv=Math.round(b.tot*(1-0.60-b.pzPct/100));}
+      else if(col==="usN")   {av=Math.round(a.tot*0.60);bv=Math.round(b.tot*0.60);}
+      else {av=a.us;bv=b.us;}
+      return dir==="desc" ? bv-av : av-bv;
+    });
+    return d;
+  }
 
-  var maxUs = Math.max.apply(null,data.map(function(b){return b.us;}));
-  var maxEs = Math.max.apply(null,data.map(function(b){return b.es;}));
-  var maxPz = Math.max.apply(null,data.map(function(b){return b.pz;}));
-  var maxDelta = Math.max.apply(null,data.map(function(b){return b.deltaN;}));
+  var col = window.PSORT.col;
+  var dir = window.PSORT.dir;
+  var data = sortData(BARRIOS, col, dir);
+
+  var maxUs    = Math.max.apply(null,BARRIOS.map(function(b){return b.us;}));
+  var maxEs    = Math.max.apply(null,BARRIOS.map(function(b){return b.es;}));
+  var maxTot   = Math.max.apply(null,BARRIOS.map(function(b){return b.tot;}));
+  var maxDelta = Math.max.apply(null,BARRIOS.map(function(b){return b.deltaN;}));
+  var maxUsN   = Math.max.apply(null,BARRIOS.map(function(b){return Math.round(b.tot*0.60);}));
+  var maxEsN   = Math.max.apply(null,BARRIOS.map(function(b){return Math.round(b.tot*(1-0.60-b.pzPct/100));}));
+
+  function arrow(c) {
+    if (col!==c) return '<span style="opacity:.4"> ⇅</span>';
+    return dir==="desc"
+      ? '<span style="color:var(--g)"> ↓</span>'
+      : '<span style="color:var(--g)"> ↑</span>';
+  }
+  function thBtn(c, line1, line2) {
+    return '<th class="tc th-sort" onclick="psort(\'' + c + '\')">'
+      + line1 + arrow(c)
+      + (line2 ? '<div style="font-weight:400;font-size:10px;color:var(--t3);text-transform:none;letter-spacing:0;margin-top:2px">'+line2+'</div>' : '')
+      + '</th>';
+  }
 
   var rows = data.map(function(b, idx) {
-    var rowBg = idx%2===0 ? "" : "background:var(--bg3)";
+    var rowBg = idx%2===0 ? "" : "background:rgba(255,255,255,0.025)";
     var hotB = b.deltaN>=13
-      ? '<span class="dbd dg" style="font-size:9px;padding:1px 5px;margin-left:4px">HOT</span>'
-      : b.deltaN>=9 ? '<span class="dbd da" style="font-size:9px;padding:1px 5px;margin-left:4px">↑</span>' : "";
+      ? ' <span class="dbd dg" style="font-size:9px;padding:1px 5px">HOT</span>'
+      : b.deltaN>=9 ? ' <span class="dbd da" style="font-size:9px;padding:1px 5px">↑</span>' : "";
 
-    // spark bar for used price
-    var usPct = Math.round(b.us/maxUs*100);
-    var esPct = Math.round(b.es/maxEs*100);
-    var pzPct2 = Math.round(b.pz/maxPz*100);
-    var dPct  = Math.round(b.deltaN/maxDelta*100);
-    var dCol  = b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
+    var usN = Math.round(b.tot * 0.60);
+    var pzN = Math.round(b.tot * b.pzPct/100);
+    var esN = b.tot - usN - pzN;
 
-    var tdUs = showUs ? '<td class="tc"><div class="cell-val" style="color:var(--t1)">'+fmt(b.us)+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+usPct+'%;background:'+C.us+'"></div></div></td>' : "";
-    var tdEs = showEs ? '<td class="tc"><div class="cell-val" style="color:'+C.es+'">'+fmt(b.es)+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+esPct+'%;background:'+C.es+'"></div></div><div class="cell-diff">+'+Math.round((b.es/b.us-1)*100)+'% vs usado</div></td>' : "";
-    var tdPz = showPz ? '<td class="tc"><div class="cell-val" style="color:'+C.pz+'">'+fmt(b.pz)+(b.pzOk?"":'<span title="Promedio CABA" style="color:var(--t3);font-size:10px"> *</span>')+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+pzPct2+'%;background:'+C.pz+'"></div></div><div class="cell-diff">+'+Math.round((b.pz/b.us-1)*100)+'% vs usado</div></td>' : "";
+    var usPct  = Math.round(b.us/maxUs*100);
+    var esPct  = Math.round(b.es/maxEs*100);
+    var usNPct = Math.round(usN/maxUsN*100);
+    var esNPct = Math.round(esN/maxEsN*100);
+    var totPct = Math.round(b.tot/maxTot*100);
+    var dPct   = Math.round(b.deltaN/maxDelta*100);
+    var dCol   = b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
+    var esDiff = "+"+Math.round((b.es/b.us-1)*100)+"% vs usado";
 
-    return '<tr style="'+rowBg+'">'+
-      '<td class="td-barrio"><span class="barrio-label">'+b.n+'</span>'+hotB+'<div style="font-size:10px;color:var(--t3);margin-top:2px">'+b.fuente+'</div></td>'+
-      tdUs + tdEs + tdPz +
-      '<td class="tc">'+
-        '<div class="cell-val" style="color:'+dCol+'">'+b.delta+'</div>'+
-        '<div class="spark-bar"><div class="spark-fill" style="width:'+dPct+'%;background:'+dCol+'"></div></div>'+
-        '<div class="cell-diff">interanual</div>'+
-      '</td>'+
-      '<td class="tc">'+
-        '<div class="cell-val" style="color:var(--t2)">US$'+fmt(b.alq2)+'</div>'+
-        '<div class="cell-diff">2 amb./mes</div>'+
-      '</td>'+
-    '</tr>';
+    return '<tr style="'+rowBg+'">'
+      + '<td class="td-barrio">'
+          + '<span class="barrio-label">'+b.n+'</span>'+hotB
+          + '<div style="font-size:10px;color:var(--t3);margin-top:3px">'+b.fuente+'</div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-val">US$'+fmt(b.us)+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+usPct+'%;background:'+C.us+'"></div></div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-qty">'+fmt(usN)+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+usNPct+'%;background:rgba(93,104,128,.45)"></div></div>'
+          + '<div class="cell-sub">unidades</div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-val" style="color:'+C.es+'">US$'+fmt(b.es)+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+esPct+'%;background:'+C.es+'"></div></div>'
+          + '<div class="cell-sub">'+esDiff+'</div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-qty" style="color:rgba(77,159,255,.85)">'+fmt(esN)+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+esNPct+'%;background:rgba(77,159,255,.35)"></div></div>'
+          + '<div class="cell-sub">unidades</div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-val" style="color:var(--t2)">'+fmt(b.tot)+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+totPct+'%;background:rgba(255,255,255,.12)"></div></div>'
+        + '</td>'
+      + '<td class="tc">'
+          + '<div class="cell-val" style="color:'+dCol+'">'+b.delta+'</div>'
+          + '<div class="sbar"><div class="sfill" style="width:'+dPct+'%;background:'+dCol+'"></div></div>'
+          + '<div class="cell-sub">interanual</div>'
+        + '</td>'
+      + '</tr>';
   }).join("");
 
-  return '<div class="kgrid">'+
-    kc("","Prom. CABA abr 2026","US$2.460/m2","+2,2% interanual","cup")+
-    kc("b","Pozo CABA may 2025","US$2.893/m2","+22% desde nov 2023","cup")+
-    kc("a","Mayor suba interanual","Villa Crespo","+18%","cup")+
-    kc("","Estrenar vs usado","+28% prom CABA","brecha historica","cdn")+
-  '</div>'+
-  '<div class="cmp-table-wrap">'+
-  '<table class="cmp-table">'+
-    '<thead><tr>'+
-      '<th class="th-barrio">Barrio</th>'+
-      thCols+
-      '<th class="tc">Suba 12m<br><span style="font-weight:400;font-size:10px">interanual</span></th>'+
-      '<th class="tc">Alquiler<br><span style="font-weight:400;font-size:10px">2 amb.</span></th>'+
-    '</tr></thead>'+
-    '<tbody>'+rows+'</tbody>'+
-  '</table>'+
-  '</div>'+
-  '<div style="font-size:11px;color:var(--t3);margin-top:10px">* Pozo = promedio CABA (ZP may 2025): ZonaProp no desglosa ese dato por barrio en esos casos.</div>'+
-  disc();
+  return '<div class="kgrid">'
+      + kc("","Prom. CABA abr 2026","US$2.460/m2","+2,2% interanual","cup")
+      + kc("b","Mayor precio usado","Palermo","US$3.035/m2","cne")
+      + kc("a","Mayor suba","Villa Crespo","+18% interanual","cup")
+      + kc("","Estrenar vs usado","+28% prom CABA","brecha historica","cdn")
+    + '</div>'
+    + '<div style="font-size:11px;color:var(--t3);margin-bottom:10px">Hacé clic en cualquier encabezado de columna para ordenar. Cantidades son estimadas (ZP no publica ese detalle por barrio).</div>'
+    + '<div class="cmp-table-wrap">'
+      + '<table class="cmp-table">'
+        + '<thead><tr>'
+          + '<th class="th-barrio">Barrio</th>'
+          + thBtn("us","USD/m2 Usado","precio publicado")
+          + thBtn("usN","Cant. Usado","unidades est.")
+          + thBtn("es","USD/m2 Estrenar","precio publicado")
+          + thBtn("esN","Cant. Estrenar","unidades est.")
+          + thBtn("tot","Total Oferta","todas las unidades")
+          + thBtn("delta","Suba 12m","interanual ZP")
+        + '</tr></thead>'
+        + '<tbody>'+rows+'</tbody>'
+      + '</table>'
+    + '</div>'
+    + disc();
+}
+
+function psort(col) {
+  if (!window.PSORT) window.PSORT = {col:"us", dir:"desc"};
+  if (window.PSORT.col === col) {
+    window.PSORT.dir = window.PSORT.dir==="desc" ? "asc" : "desc";
+  } else {
+    window.PSORT.col = col;
+    window.PSORT.dir = "desc";
+  }
+  renderContent();
 }
 
 function renderSegmentos() {
