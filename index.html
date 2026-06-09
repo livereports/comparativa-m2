@@ -1,0 +1,771 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropBot CABA — Solo ZonaProp</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0f1117;--bg2:#171b24;--bg3:#1e2433;--bg4:#252d40;--bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);--t1:#f0f2f7;--t2:#9aa3b8;--t3:#5d6880;--g:#3be08a;--gbg:rgba(59,224,138,.10);--b:#4d9fff;--bbg:rgba(77,159,255,.12);--a:#f5c842;--abg:rgba(245,200,66,.12);--r:#f56f6f;--o:#f5923e;--obg:rgba(245,146,62,.12);--sw:220px;--fn:'DM Sans',sans-serif;--mo:'DM Mono',monospace;--rx:10px;--rs:6px}
+html,body{height:100%;font-family:var(--fn);background:var(--bg);color:var(--t1);font-size:14px;line-height:1.5;overflow:hidden}
+button{font-family:var(--fn);cursor:pointer;border:none;background:none}
+select{font-family:var(--fn)}
+.app{display:flex;height:100vh;overflow:hidden}
+.sb{width:var(--sw);background:var(--bg2);border-right:1px solid var(--bd);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb::-webkit-scrollbar{width:3px}.sb::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:9px}
+.logo-ic{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1fa862,#3be08a);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0}
+.logo-tx strong{display:block;font-size:14px;font-weight:600;letter-spacing:-.02em}
+.logo-tx span{font-size:10px;color:var(--t3);letter-spacing:.04em;text-transform:uppercase}
+.sb-src{padding:10px 16px 10px;border-bottom:1px solid var(--bd)}
+.slbl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.src-it{display:flex;align-items:center;gap:7px;padding:4px 0;font-size:12px;color:var(--t2)}
+.sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.sok{margin-left:auto;font-size:10px;color:var(--g);font-weight:500}
+.mode-row{display:flex;gap:4px;padding:10px 12px;border-bottom:1px solid var(--bd)}
+.mbtn{flex:1;font-size:11px;padding:5px 0;border-radius:var(--rs);border:1px solid var(--bd);color:var(--t3);cursor:pointer;transition:all .15s;text-align:center}
+.mbtn:hover{color:var(--t1)}
+.mbtn.mg{background:var(--gbg);color:var(--g);border-color:rgba(59,224,138,.3)}
+.mbtn.mo{background:var(--obg);color:var(--o);border-color:rgba(245,146,62,.3)}
+.sb-nav{padding:8px 10px;flex:1}
+.nsec{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.06em;padding:0 6px;margin:12px 0 4px}
+.nsec:first-child{margin-top:4px}
+.ni{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:var(--rs);font-size:13px;color:var(--t2);cursor:pointer;transition:all .15s;width:100%;position:relative;text-align:left}
+.ni:hover{background:var(--bg3);color:var(--t1)}
+.ni.act{background:var(--gbg);color:var(--g)}
+.ni.act::before{content:'';position:absolute;left:0;top:18%;bottom:18%;width:2px;border-radius:2px;background:var(--g)}
+.ni.dev.act{background:var(--obg);color:var(--o)}
+.ni.dev.act::before{background:var(--o)}
+.ni-badge{margin-left:auto;font-size:10px;padding:1px 6px;border-radius:10px;background:var(--gbg);color:var(--g);font-weight:500;white-space:nowrap}
+.ni-badge.o{background:var(--obg);color:var(--o)}
+.sb-foot{padding:10px 16px 14px;border-top:1px solid var(--bd);font-size:11px;color:var(--t3);line-height:1.7}
+.sb-foot strong{color:var(--t2)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{display:flex;align-items:center;gap:12px;padding:13px 24px;border-bottom:1px solid var(--bd);background:var(--bg2);flex-shrink:0}
+.tb-ti{font-size:15px;font-weight:600;letter-spacing:-.02em}
+.tb-su{font-size:12px;color:var(--t3);margin-top:1px}
+.tb-ri{margin-left:auto;display:flex;gap:7px}
+.pill{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:500;background:var(--gbg);color:var(--g);border:1px solid rgba(59,224,138,.2)}
+.pill.b{background:var(--bbg);color:var(--b);border-color:rgba(77,159,255,.2)}
+.pill.o{background:var(--obg);color:var(--o);border-color:rgba(245,146,62,.2)}
+.fbar{display:flex;align-items:center;gap:8px;padding:8px 24px;border-bottom:1px solid var(--bd);background:var(--bg);flex-shrink:0;overflow-x:auto;min-height:44px}
+.fbar::-webkit-scrollbar{height:0}
+.flbl{font-size:11px;color:var(--t3);white-space:nowrap;flex-shrink:0}
+.fsep{width:1px;height:16px;background:var(--bd);flex-shrink:0}
+.fg{display:flex;gap:4px;flex-shrink:0}
+.fbtn{font-size:12px;padding:5px 11px;border-radius:20px;border:1px solid var(--bd);color:var(--t2);background:var(--bg2);transition:all .15s;white-space:nowrap;cursor:pointer}
+.fbtn:hover{border-color:var(--bd2);color:var(--t1)}
+.fbtn.on{background:var(--gbg);color:var(--g);border-color:rgba(59,224,138,.3)}
+.content{flex:1;overflow-y:auto;padding:24px}
+.content::-webkit-scrollbar{width:6px}.content::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+.kgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+.kc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rx);padding:15px 17px;position:relative;overflow:hidden}
+.kc::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--g);opacity:.5}
+.kc.b::after{background:var(--b)}.kc.a::after{background:var(--a)}.kc.r::after{background:var(--r)}.kc.o::after{background:var(--o)}
+.kl{font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px}
+.kv{font-size:20px;font-weight:600;letter-spacing:-.03em}
+.kd{font-size:12px;margin-top:3px}
+.cup{color:var(--g)}.cdn{color:var(--r)}.cne{color:var(--t3)}.cb{color:var(--b)}.co{color:var(--o)}.ca{color:var(--a)}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.card{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rx);padding:18px}
+.ct{font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.cdot{width:6px;height:6px;border-radius:50%}
+.shd{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.shd h2{font-size:14px;font-weight:600;letter-spacing:-.01em}
+.shd p{font-size:12px;color:var(--t3)}
+.br{display:flex;align-items:center;gap:10px;margin-bottom:8px}.br:last-child{margin-bottom:0}
+.brl{font-size:12px;color:var(--t2);min-width:120px;flex-shrink:0}
+.brt{flex:1;height:7px;background:var(--bg4);border-radius:4px;overflow:hidden}
+.brf{height:100%;border-radius:4px;transition:width .5s cubic-bezier(.4,0,.2,1)}
+.brv{font-size:12px;font-weight:500;min-width:80px;text-align:right;font-family:var(--mo)}
+.stk{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}
+.stk-s{min-width:2px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;color:var(--t3);font-weight:500;text-transform:uppercase;letter-spacing:.05em;padding:7px 12px;text-align:left;border-bottom:1px solid var(--bd)}
+.tbl td{padding:9px 12px;font-size:13px;border-bottom:1px solid var(--bd);color:var(--t1);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--bg3)}
+.mn{font-family:var(--mo);font-size:12px}
+.bb{border:1px solid var(--bd);border-radius:var(--rx);overflow:hidden;margin-bottom:8px;transition:border-color .15s}
+.bb:hover{border-color:var(--bd2)}
+.bh{display:grid;align-items:center;gap:10px;padding:11px 16px;cursor:pointer;background:var(--bg2);transition:background .15s;user-select:none}
+.bh:hover{background:var(--bg3)}
+.bh-nm{font-size:13px;font-weight:600}
+.bh-pr{font-size:13px;font-weight:600;color:var(--g);font-family:var(--mo);text-align:right}
+.bh-ch{font-size:13px;color:var(--t3);text-align:center;transition:transform .2s}
+.bd{display:none;padding:0 16px 14px;background:var(--bg)}
+.bd.open{display:block}
+.bd-g{display:grid;gap:10px;margin-top:12px}
+.bd-s{padding:12px 14px;border-radius:var(--rs);border:1px solid var(--bd);background:var(--bg2)}
+.bd-sl{font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-bottom:5px;font-weight:500}
+.bd-sv{font-size:20px;font-weight:600;letter-spacing:-.02em;font-family:var(--mo)}
+.bd-sp{font-size:12px;color:var(--t2)}
+.bd-note{font-size:12px;color:var(--t3);margin-top:10px;padding:8px 10px;background:var(--bg2);border-radius:var(--rs);border-left:2px solid var(--bd2)}
+.ins{padding:10px 13px;border-radius:var(--rs);font-size:12px;line-height:1.6;margin-bottom:9px;display:flex;gap:9px;align-items:flex-start}
+.ins-ic{font-size:14px;flex-shrink:0;margin-top:1px}
+.ins.ig{background:rgba(59,224,138,.07);border:1px solid rgba(59,224,138,.2);color:#a8f0cc}
+.ins.ib{background:rgba(77,159,255,.07);border:1px solid rgba(77,159,255,.2);color:#a8ccf0}
+.ins.ia{background:rgba(245,200,66,.07);border:1px solid rgba(245,200,66,.2);color:#f0dca8}
+.ins.io{background:rgba(245,146,62,.07);border:1px solid rgba(245,146,62,.2);color:#f0c8a8}
+.dbd{display:inline-flex;align-items:center;font-size:10px;padding:2px 7px;border-radius:8px;font-weight:500;white-space:nowrap}
+.dg{background:rgba(59,224,138,.12);color:var(--g)}
+.do{background:rgba(245,146,62,.12);color:var(--o)}
+.dr{background:rgba(245,111,111,.12);color:var(--r)}
+.da{background:rgba(245,200,66,.12);color:var(--a)}
+.db{background:rgba(77,159,255,.12);color:var(--b)}
+.opc{background:var(--bg2);border:1px solid var(--bd);border-radius:var(--rx);padding:16px;margin-bottom:10px;transition:border-color .15s}
+.opc:hover{border-color:var(--bd2)}
+.op-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.op-nm{font-size:14px;font-weight:600}
+.op-sc{font-size:18px;font-weight:700;font-family:var(--mo)}
+.op-meta{display:flex;gap:6px;flex-wrap:wrap}
+.op-g{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.op-s{background:var(--bg3);border-radius:var(--rs);padding:9px 10px}
+.op-sl{font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.04em}
+.op-sv{font-size:13px;font-weight:600;font-family:var(--mo);margin-top:3px}
+.note{font-size:11px;color:var(--t3);padding:9px 13px;background:var(--bg2);border-radius:var(--rs);border:1px solid var(--bd);line-height:1.7;margin-top:16px}
+.legend{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
+.legsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
+::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
+/* ── Update button ── */
+.upd-bar{display:flex;align-items:center;gap:10px;padding:8px 24px;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
+#btnActualizar{font-size:12px;padding:6px 14px;border-radius:20px;border:1px solid rgba(59,224,138,.4);background:var(--gbg);color:var(--g);cursor:pointer;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px}
+#btnActualizar:hover{background:rgba(59,224,138,.18);border-color:var(--g)}
+#btnActualizar:disabled{opacity:.5;cursor:default}
+#lastUpdate{font-size:11px;color:var(--t3);margin-left:4px}
+#updateStatus{display:none;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--bd);font-size:12px;margin-left:auto}
+.upd-spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.upd-msg{color:var(--t2)}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="logo-ic">🏢</div>
+    <div class="logo-tx"><strong>PropBot CABA</strong><span>Solo ZonaProp</span></div>
+  </div>
+  <div class="mode-row">
+    <button class="mbtn mg" id="btnDepto" onclick="setMode('depto')">🏠 Comprador</button>
+    <button class="mbtn" id="btnDev" onclick="setMode('dev')">🏗️ Developer</button>
+  </div>
+  <div class="sb-src">
+    <div class="slbl">Fuente unica</div>
+    <div class="src-it"><div class="sdot" style="background:var(--g)"></div>ZonaProp<span class="sok">●</span></div>
+    <div class="src-it" style="padding:2px 0;font-size:11px;color:var(--t3)">zpindex · informes mensuales</div>
+  </div>
+  <nav class="sb-nav">
+    <div id="navDepto">
+      <div class="nsec">Analisis de precios</div>
+      <button class="ni act" data-rep="precios">📊 Precios por m2<span class="ni-badge">11 barrios</span></button>
+      <button class="ni" data-rep="segmentos">📐 Pozo / Estrenar / Usado</button>
+      <div class="nsec">Oferta y tendencias</div>
+      <button class="ni" data-rep="oferta">🏘️ Oferta por barrio</button>
+      <button class="ni" data-rep="evolucion">📈 Evolucion interanual</button>
+      <button class="ni" data-rep="rentabilidad">💰 Rentabilidad</button>
+    </div>
+    <div id="navDev" style="display:none">
+      <div class="nsec">Analisis de suelo</div>
+      <button class="ni dev" data-rep="dev-oport">🎯 Oportunidades<span class="ni-badge o">HOT</span></button>
+      <button class="ni dev" data-rep="dev-incidencia">💲 Incidencia terreno</button>
+      <button class="ni dev" data-rep="dev-zonif">📋 Zonificacion CUR</button>
+    </div>
+  </nav>
+  <div class="sb-foot">
+    <strong>Datos:</strong> ZonaProp exclusivamente<br>
+    Valores de <strong>publicacion</strong><br>
+    Cierre real: ~5-7% menor<br>
+    Referencia: dic 2025 / abr 2026
+  </div>
+</aside>
+<div class="main">
+  <div class="topbar">
+    <div>
+      <div class="tb-ti" id="tbTi">Precios por m2 — Departamentos CABA</div>
+      <div class="tb-su" id="tbSu">Solo ZonaProp · 11 barrios · valores de publicacion</div>
+    </div>
+    <div class="tb-ri">
+      <span class="pill">ZonaProp</span>
+      <span class="pill b" id="tbMode">Solo dpto.</span>
+    </div>
+  </div>
+  <div class="upd-bar">
+    <button id="btnActualizar" onclick="actualizarDatos()">
+      <span>↻</span> Actualizar datos
+    </button>
+    <span id="lastUpdate">Datos: dic 2025 / abr 2026</span>
+    <div id="updateStatus">
+      <div class="upd-spinner"></div>
+      <span class="upd-msg">Consultando ZonaProp...</span>
+    </div>
+  </div>
+  <div class="fbar" id="fbar"></div>
+  <div class="content" id="content"></div>
+</div>
+</div>
+<script>
+const BARRIOS = [
+  {n:"Palermo",      us:3035, es:3773, pz:3709, pzOk:true,  tot:13200, pzPct:9,  delta:"+5%",  deltaN:5,  alq2:680,  fuente:"ZP dic 2025 / ene 2026"},
+  {n:"Belgrano",     us:2806, es:3390, pz:3357, pzOk:true,  tot:6842,  pzPct:5,  delta:"+8%",  deltaN:8,  alq2:580,  fuente:"ZP dic 2025 / ene 2026"},
+  {n:"Belgrano R",   us:2950, es:3550, pz:3500, pzOk:false, tot:269,   pzPct:4,  delta:"+8%",  deltaN:8,  alq2:620,  fuente:"ZP sub-zona Belgrano (est.)"},
+  {n:"Nunez",        us:2889, es:3221, pz:3461, pzOk:true,  tot:3100,  pzPct:7,  delta:"+13%", deltaN:13, alq2:590,  fuente:"ZP may 2025 / dic 2025"},
+  {n:"Recoleta",     us:2613, es:2889, pz:2544, pzOk:true,  tot:5800,  pzPct:3,  delta:"+8%",  deltaN:8,  alq2:540,  fuente:"ZP dic 2025"},
+  {n:"Colegiales",   us:2628, es:3191, pz:3125, pzOk:true,  tot:2100,  pzPct:4,  delta:"+14%", deltaN:14, alq2:530,  fuente:"ZP ene 2026"},
+  {n:"Saavedra",     us:1991, es:2800, pz:2893, pzOk:false, tot:2800,  pzPct:4,  delta:"+10%", deltaN:10, alq2:440,  fuente:"ZP dic 2025 (pozo = prom CABA)"},
+  {n:"Villa Urquiza",us:2577, es:3336, pz:2893, pzOk:false, tot:3200,  pzPct:3,  delta:"+7%",  deltaN:7,  alq2:520,  fuente:"ZP ene 2026 (pozo = prom CABA)"},
+  {n:"Villa Crespo", us:2085, es:2979, pz:2893, pzOk:false, tot:2400,  pzPct:4,  delta:"+18%", deltaN:18, alq2:490,  fuente:"ZP dic 2025 / ene 2026 (pozo = prom CABA)"},
+  {n:"Chacarita",    us:2136, es:2863, pz:2893, pzOk:false, tot:2200,  pzPct:3,  delta:"+9%",  deltaN:9,  alq2:470,  fuente:"ZP dic 2025 (pozo = prom CABA)"},
+  {n:"Almagro",      us:1996, es:2979, pz:2893, pzOk:false, tot:3231,  pzPct:3,  delta:"+8%",  deltaN:8,  alq2:450,  fuente:"ZP ene 2026 / jun 2026 (pozo = prom CABA)"},
+];
+
+const C = {us:"#5d6880", es:"#4d9fff", pz:"#3be08a"};
+const fmt = n => n.toLocaleString("es-AR");
+
+const S = {
+  mode:"depto", rep:"precios",
+  seg:"todos", orden:"us",
+  ordenRenta:"renta", ordenInc:"mayor",
+};
+
+const META = {
+  precios:         {t:"Precios por m2 - Departamentos",      s:"Solo ZonaProp · 11 barrios · valores de publicacion"},
+  segmentos:       {t:"Pozo / A estrenar / Usado",           s:"Solo ZonaProp · diferencia por segmento"},
+  oferta:          {t:"Oferta y composicion por barrio",     s:"Solo ZonaProp · cantidad de dptos. en venta"},
+  evolucion:       {t:"Evolucion y suba interanual",         s:"Solo ZonaProp · variacion ultimos 12 meses"},
+  rentabilidad:    {t:"Rentabilidad por barrio",             s:"Solo ZonaProp · renta bruta estimada"},
+  "dev-oport":     {t:"Oportunidades - Vision Developer",    s:"ZonaProp + CUR · incidencia y margen orientativo"},
+  "dev-incidencia":{t:"Incidencia del terreno",              s:"Estimacion mercado 2025-2026"},
+  "dev-zonif":     {t:"Zonificacion CUR 2025",               s:"Codigo Urbanistico CABA + ZonaProp"},
+};
+
+function goRep(id) {
+  S.rep = id;
+  document.querySelectorAll(".ni").forEach(function(n){ n.classList.remove("act"); });
+  var btn = document.querySelector(".ni[data-rep='" + id + "']");
+  if (btn) btn.classList.add("act");
+  var m = META[id] || {t:id,s:""};
+  document.getElementById("tbTi").textContent = m.t;
+  document.getElementById("tbSu").textContent = m.s;
+  document.getElementById("content").scrollTop = 0;
+  renderFbar();
+  renderContent();
+}
+document.querySelectorAll(".ni").forEach(function(btn){
+  btn.addEventListener("click", function(){ goRep(btn.dataset.rep); });
+});
+
+function setMode(m) {
+  S.mode = m;
+  document.getElementById("btnDepto").className = "mbtn " + (m==="depto"?"mg":"");
+  document.getElementById("btnDev").className   = "mbtn " + (m==="dev"?"mo":"");
+  document.getElementById("navDepto").style.display = m==="depto"?"block":"none";
+  document.getElementById("navDev").style.display   = m==="dev"?"block":"none";
+  document.getElementById("tbMode").textContent = m==="depto"?"Solo dpto.":"Developer";
+  goRep(m==="dev" ? "dev-oport" : "precios");
+}
+
+var FBARS = {
+  precios: [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"orden",opts:[{v:"us",l:"Usado"},{v:"es",l:"A estrenar"},{v:"pz",l:"Pozo"},{v:"delta",l:"Mayor suba"}]},
+    {type:"sep"},
+    {type:"label",text:"Ver segmento:"},
+    {type:"group",key:"seg",opts:[{v:"todos",l:"Todos"},{v:"us",l:"Usado"},{v:"es",l:"Estrenar"},{v:"pz",l:"Pozo"}]},
+  ],
+  segmentos: [
+    {type:"label",text:"Mostrar:"},
+    {type:"group",key:"seg",opts:[{v:"todos",l:"Todos"},{v:"us",l:"Solo usado"},{v:"es",l:"Solo estrenar"},{v:"pz",l:"Solo pozo"}]},
+    {type:"sep"},
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"orden",opts:[{v:"us",l:"Usado"},{v:"es",l:"Estrenar"},{v:"pz",l:"Pozo"},{v:"delta",l:"Mayor suba"}]},
+  ],
+  oferta: [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"orden",opts:[{v:"tot",l:"Cantidad total"},{v:"pz",l:"% Pozo"},{v:"us",l:"Precio usado"}]},
+  ],
+  evolucion: [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"orden",opts:[{v:"delta",l:"Mayor suba"},{v:"us",l:"Precio actual"}]},
+  ],
+  rentabilidad: [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"ordenRenta",opts:[{v:"renta",l:"Renta bruta"},{v:"anios",l:"Anos recupero"}]},
+  ],
+  "dev-oport": [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"ordenInc",opts:[{v:"mayor",l:"Mayor incidencia"},{v:"menor",l:"Menor incidencia"},{v:"margen",l:"Mayor margen"}]},
+  ],
+  "dev-incidencia": [
+    {type:"label",text:"Ordenar:"},
+    {type:"group",key:"ordenInc",opts:[{v:"mayor",l:"Mayor incidencia"},{v:"menor",l:"Menor incidencia"}]},
+  ],
+  "dev-zonif": [],
+};
+
+function renderFbar() {
+  var cfg = FBARS[S.rep] || [];
+  var bar = document.getElementById("fbar");
+  bar.innerHTML = "";
+  bar.style.display = cfg.length ? "flex" : "none";
+  cfg.forEach(function(item) {
+    if (item.type === "label") {
+      var s = document.createElement("span"); s.className = "flbl"; s.textContent = item.text; bar.appendChild(s);
+    } else if (item.type === "sep") {
+      var sp = document.createElement("span"); sp.className = "fsep"; bar.appendChild(sp);
+    } else if (item.type === "group") {
+      var g = document.createElement("div"); g.className = "fg";
+      item.opts.forEach(function(opt) {
+        var b = document.createElement("button");
+        b.className = "fbtn" + (S[item.key] === opt.v ? " on" : "");
+        b.textContent = opt.l;
+        b.addEventListener("click", function(){
+          S[item.key] = opt.v;
+          g.querySelectorAll(".fbtn").forEach(function(x){ x.classList.remove("on"); });
+          b.classList.add("on");
+          renderContent();
+        });
+        g.appendChild(b);
+      });
+      bar.appendChild(g);
+    }
+  });
+}
+
+function kc(cls,label,val,delta,dcls){return '<div class="kc '+cls+'"><div class="kl">'+label+'</div><div class="kv">'+val+'</div><div class="kd '+(dcls||"cne")+'">'+delta+'</div></div>';}
+function brRow(label,pct,color,val){return '<div class="br"><span class="brl">'+label+'</span><div class="brt"><div class="brf" style="width:'+Math.max(pct,2)+'%;background:'+color+'"></div></div><span class="brv" style="color:'+color+'">'+val+'</span></div>';}
+function ins(cls,ic,txt){return '<div class="ins '+cls+'"><span class="ins-ic">'+ic+'</span><span>'+txt+'</span></div>';}
+function badge(cls,txt){return '<span class="dbd '+cls+'">'+txt+'</span>';}
+
+function disc() {
+  return '<div class="note"><strong>Fuente: ZonaProp exclusivamente</strong> — zpindex CABA e informes mensuales 2025-2026 (citados por La Nacion, Infobae, Ambito). Valores de <strong>publicacion</strong>, no de cierre. El precio de cierre es aprox. 5-7% menor. <strong>(*)</strong> Pozo para Saavedra, V.Urquiza, V.Crespo, Chacarita y Almagro = promedio CABA ZP (US$2.893/m2, may 2025): ZP no desglosa ese dato por barrio en esos casos.</div>';
+}
+
+function sorted(key) {
+  var d = BARRIOS.slice();
+  if(key==="us")    d.sort(function(a,b){return b.us-a.us;});
+  if(key==="es")    d.sort(function(a,b){return b.es-a.es;});
+  if(key==="pz")    d.sort(function(a,b){return b.pz-a.pz;});
+  if(key==="tot")   d.sort(function(a,b){return b.tot-a.tot;});
+  if(key==="delta") d.sort(function(a,b){return b.deltaN-a.deltaN;});
+  if(key==="pzPct") d.sort(function(a,b){return b.pzPct-a.pzPct;});
+  return d;
+}
+
+function renderPrecios() {
+  var data = sorted(S.orden);
+  var showUs = S.seg==="todos"||S.seg==="us";
+  var showEs = S.seg==="todos"||S.seg==="es";
+  var showPz = S.seg==="todos"||S.seg==="pz";
+  var maxVal = 0;
+  data.forEach(function(b){
+    if(showUs&&b.us>maxVal)maxVal=b.us;
+    if(showEs&&b.es>maxVal)maxVal=b.es;
+    if(showPz&&b.pz>maxVal)maxVal=b.pz;
+  });
+  var rows = data.map(function(b){
+    var hotB = b.deltaN>=13?badge("dg",b.delta):b.deltaN>=9?badge("da",b.delta):"";
+    var html = '<div class="bb"><div class="bh" style="grid-template-columns:150px 1fr 24px">' +
+      '<span class="bh-nm">'+b.n+(hotB?" "+hotB:"")+'</span><div></div><span class="bh-ch">▾</span></div>' +
+      '<div class="bd" style="padding:10px 16px 14px">';
+    if(showUs) html += brRow("Usado",Math.round(b.us/maxVal*100),C.us,"US$"+fmt(b.us)+"/m2");
+    if(showEs) html += brRow("A estrenar",Math.round(b.es/maxVal*100),C.es,"US$"+fmt(b.es)+"/m2");
+    if(showPz) html += brRow("En pozo"+(b.pzOk?"":" (*)"),Math.round(b.pz/maxVal*100),C.pz,"US$"+fmt(b.pz)+"/m2");
+    html += '<div class="bd-note" style="margin-top:8px">'+b.fuente+'</div></div></div>';
+    return html;
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("","Prom. CABA abr 2026","US$2.460/m2","+2,2% interanual","cup")+
+    kc("b","Pozo CABA may 2025","US$2.893/m2","+22% desde nov 2023","cup")+
+    kc("a","Estrenar CABA may 2025","US$2.831/m2","+3,3% en 2025","cup")+
+    kc("","Usado CABA may 2025","US$2.211/m2","base del mercado","cne")+
+  '</div>'+
+  '<div class="shd"><h2>Precio USD/m2 · ordenado por: '+ {us:"usado",es:"a estrenar",pz:"pozo",delta:"mayor suba"}[S.orden]+'</h2>'+
+  '<p>11 barrios seleccionados</p></div>'+
+  '<div class="legend">'+
+    (showUs?'<span class="leg"><span class="legsq" style="background:'+C.us+'"></span>Usado</span>':'')+
+    (showEs?'<span class="leg"><span class="legsq" style="background:'+C.es+'"></span>A estrenar</span>':'')+
+    (showPz?'<span class="leg"><span class="legsq" style="background:'+C.pz+'"></span>En pozo (* = prom CABA)</span>':'')+
+  '</div>'+rows+disc();
+}
+
+function renderSegmentos() {
+  var data = sorted(S.orden==="delta"?"delta":S.orden);
+  var showUs = S.seg==="todos"||S.seg==="us";
+  var showEs = S.seg==="todos"||S.seg==="es";
+  var showPz = S.seg==="todos"||S.seg==="pz";
+  var colCount = (showUs?1:0)+(showEs?1:0)+(showPz?1:0);
+  var cards = data.map(function(b){
+    var cols = "";
+    if(showUs) cols += '<div class="bd-s" style="border-color:rgba(93,104,128,.3)"><div class="bd-sl" style="color:'+C.us+'">Usado</div><div class="bd-sv" style="color:var(--t1)">US$'+fmt(b.us)+'</div><div class="bd-sp">/m2</div></div>';
+    if(showEs) cols += '<div class="bd-s" style="border-color:rgba(77,159,255,.2)"><div class="bd-sl" style="color:'+C.es+'">A estrenar</div><div class="bd-sv" style="color:'+C.es+'">US$'+fmt(b.es)+'</div><div class="bd-sp">+'+Math.round((b.es/b.us-1)*100)+'% vs usado</div></div>';
+    if(showPz) cols += '<div class="bd-s" style="border-color:rgba(59,224,138,.2)"><div class="bd-sl" style="color:'+C.pz+'">En pozo'+(b.pzOk?"":" (*)")+'</div><div class="bd-sv" style="color:'+C.pz+'">US$'+fmt(b.pz)+'</div><div class="bd-sp">+'+Math.round((b.pz/b.us-1)*100)+'% vs usado</div></div>';
+    return '<div class="card" style="margin-bottom:10px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">'+
+        '<span style="font-weight:600;font-size:14px">'+b.n+'</span>'+
+        '<span style="font-size:11px;color:var(--t3)">'+b.fuente+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat('+colCount+',1fr);gap:8px">'+cols+'</div>'+
+    '</div>';
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("","Brecha pozo vs usado","~31%","CABA promedio ZP may25","cdn")+
+    kc("b","Brecha estrenar vs usado","~28%","CABA promedio ZP may25","cdn")+
+    kc("a","Palermo: mayor brecha pozo","Pozo +22% vs usado","US$3.709 vs US$3.035","cdn")+
+    kc("","Recoleta: pozo mas barato","Pozo < estrenar","inversion historica","cne")+
+  '</div>'+
+  '<div class="shd"><h2>Comparativa segmentos: '+ {todos:"todos",us:"solo usado",es:"solo estrenar",pz:"solo pozo"}[S.seg]+'</h2></div>'+
+  cards+disc();
+}
+
+function renderOferta() {
+  var keyMap = {tot:"tot",pz:"pzPct",us:"us"};
+  var data = sorted(keyMap[S.orden]||"tot");
+  var maxTot = Math.max.apply(null,data.map(function(b){return b.tot;}));
+  var rows = data.map(function(b){
+    var pzN = Math.round(b.tot*b.pzPct/100);
+    var usN = Math.round(b.tot*0.60);
+    var esN = b.tot-pzN-usN;
+    return '<div class="bb">'+
+      '<div class="bh" style="grid-template-columns:145px 1fr 110px 24px;gap:10px">'+
+        '<span class="bh-nm">'+b.n+'</span>'+
+        '<div><div class="stk" style="margin-bottom:4px">'+
+          '<div class="stk-s" style="flex:'+usN+';background:'+C.us+'"></div>'+
+          '<div class="stk-s" style="flex:'+esN+';background:'+C.es+'"></div>'+
+          '<div class="stk-s" style="flex:'+pzN+';background:'+C.pz+'"></div>'+
+        '</div>'+
+        '<div style="font-size:10px;color:var(--t3)">'+b.pzPct+'% pozo ('+fmt(pzN)+'u.)</div>'+
+        '</div>'+
+        '<span class="bh-pr">'+fmt(b.tot)+' u.</span>'+
+        '<span class="bh-ch">▾</span>'+
+      '</div>'+
+      '<div class="bd">'+
+        '<div class="bd-g" style="grid-template-columns:repeat(3,1fr)">'+
+          '<div class="bd-s" style="border-color:rgba(93,104,128,.3)"><div class="bd-sl" style="color:'+C.us+'">Usado est.</div><div class="bd-sv">'+fmt(usN)+'</div><div class="bd-sp">~60% estimado</div></div>'+
+          '<div class="bd-s" style="border-color:rgba(77,159,255,.2)"><div class="bd-sl" style="color:'+C.es+'">Estrenar est.</div><div class="bd-sv">'+fmt(esN)+'</div><div class="bd-sp">~'+Math.round(esN/b.tot*100)+'% estimado</div></div>'+
+          '<div class="bd-s" style="border-color:rgba(59,224,138,.2)"><div class="bd-sl" style="color:'+C.pz+'">Pozo (ZP %)</div><div class="bd-sv">'+fmt(pzN)+'</div><div class="bd-sp">'+b.pzPct+'% segun ZP</div></div>'+
+        '</div>'+
+        '<div class="bd-note">'+b.fuente+'</div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("","Total aprox. 11 barrios","~48.000","dptos en venta ZP","cne")+
+    kc("b","Mayor oferta","Palermo","~13.200 dptos ZP","cne")+
+    kc("","Mayor % pozo","Palermo","9% del total","cup")+
+    kc("a","Pozo CABA (ZP may25)","+10,7%","crecimiento de oferta","cup")+
+  '</div>'+
+  '<div class="shd"><h2>Oferta por barrio · ordenado por '+ {tot:"cantidad",pz:"% pozo",us:"precio"}[S.orden]+'</h2><p>Clic para expandir</p></div>'+
+  '<div class="legend">'+
+    '<span class="leg"><span class="legsq" style="background:'+C.us+'"></span>Usado (est.)</span>'+
+    '<span class="leg"><span class="legsq" style="background:'+C.es+'"></span>A estrenar (est.)</span>'+
+    '<span class="leg"><span class="legsq" style="background:'+C.pz+'"></span>En pozo (% ZP)</span>'+
+  '</div>'+rows+
+  ins("ia","⚠️","La distribucion usado/estrenar es estimada (ZP no publica ese detalle por barrio). Solo el % de pozo es dato oficial ZP por barrio.")+disc();
+}
+
+function renderEvolucion() {
+  var data = sorted(S.orden==="delta"?"delta":"us");
+  var maxD = Math.max.apply(null,data.map(function(b){return b.deltaN;}));
+  var maxU = Math.max.apply(null,data.map(function(b){return b.us;}));
+  var bars = data.map(function(b){
+    if(S.orden==="delta"){
+      var col = b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
+      return brRow(b.n, Math.round(b.deltaN/maxD*100), col, b.delta+" interanual");
+    } else {
+      return brRow(b.n, Math.round(b.us/maxU*100), C.us, "US$"+fmt(b.us)+"/m2 · "+b.delta);
+    }
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("","Suba prom. CABA 2025","+5,6%","ZP dic 2025","cup")+
+    kc("b","Interanual abr 2026","+2,2%","desaceleracion del mercado","cne")+
+    kc("a","Mayor suba","Villa Crespo","+18% interanual","cup")+
+    kc("","Nunez y Colegiales","+13% y +14%","barrios en auge","cup")+
+  '</div>'+
+  '<div class="shd"><h2>Evolucion '+(S.orden==="delta"?"por suba interanual":"por precio actual")+'</h2></div>'+
+  '<div class="card" style="margin-bottom:16px">'+bars+'</div>'+
+  '<div class="g2">'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--g)"></div>Contexto ZP nacional (abr 2026)</div>'+
+      brRow("Suba interanual CABA",22,"var(--g)","+2,2%")+
+      brRow("Suba acumulada 2025",56,"var(--b)","+5,6%")+
+      brRow("Debajo de max historico",100,"var(--r)","-12,2%")+
+      ins("ia","⚠️","El ritmo se enfrio. En 2025 subio 5,6% y los ultimos 12 meses solo +2,2% (ZP abr 2026). El mercado esta estabilizandose.")+
+    '</div>'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--b)"></div>Lideres de suba (ZP 2025)</div>'+
+      brRow("Villa Crespo",100,"var(--g)","+18%")+
+      brRow("Colegiales",78,"var(--g)","+14%")+
+      brRow("Nunez",72,"var(--g)","+13%")+
+      brRow("Saavedra",56,"var(--b)","+10%")+
+      brRow("Chacarita",50,"var(--b)","+9%")+
+      brRow("Belgrano",44,"var(--a)","+8%")+
+      brRow("Palermo",28,"var(--a)","+5%")+
+    '</div>'+
+  '</div>'+disc();
+}
+
+function renderRentabilidad() {
+  var rentaData = [
+    {n:"Palermo",      renta:4.8,  anios:20.8, alq2:680},
+    {n:"Belgrano",     renta:4.5,  anios:22.2, alq2:580},
+    {n:"Belgrano R",   renta:4.6,  anios:21.7, alq2:620},
+    {n:"Nunez",        renta:4.6,  anios:21.7, alq2:590},
+    {n:"Recoleta",     renta:4.7,  anios:21.3, alq2:540},
+    {n:"Colegiales",   renta:4.9,  anios:20.4, alq2:530},
+    {n:"Saavedra",     renta:5.1,  anios:19.6, alq2:440},
+    {n:"Villa Urquiza",renta:5.2,  anios:19.2, alq2:520},
+    {n:"Villa Crespo", renta:5.5,  anios:18.2, alq2:490},
+    {n:"Chacarita",    renta:5.3,  anios:18.9, alq2:470},
+    {n:"Almagro",      renta:5.6,  anios:17.9, alq2:450},
+  ];
+  if(S.ordenRenta==="anios") rentaData.sort(function(a,b){return b.anios-a.anios;});
+  else rentaData.sort(function(a,b){return b.renta-a.renta;});
+  var maxR = Math.max.apply(null,rentaData.map(function(d){return d.renta;}));
+  var maxA = Math.max.apply(null,rentaData.map(function(d){return d.anios;}));
+  var bars = rentaData.map(function(d){
+    if(S.ordenRenta==="renta"){
+      var col = d.renta>=5.3?"var(--g)":d.renta>=4.8?"var(--b)":"var(--a)";
+      return brRow(d.n,Math.round(d.renta/maxR*100),col,d.renta+"% bruto");
+    } else {
+      var col2 = d.anios>=22?"var(--r)":d.anios>=20?"var(--a)":"var(--b)";
+      return brRow(d.n,Math.round(d.anios/maxA*100),col2,d.anios+" anos");
+    }
+  }).join("");
+  var tblRows = rentaData.map(function(d){
+    return '<tr><td>'+d.n+'</td><td class="mn cup">US$'+d.alq2+'/mes</td><td class="mn">'+d.renta+'%</td><td class="mn">'+d.anios+' a.</td></tr>';
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("","Renta bruta CABA (ZP)","5,26%","19 anos de recupero","cup")+
+    kc("b","Mejor zona","Almagro","~5,6% bruto anual","cup")+
+    kc("a","Peor zona","Belgrano","~4,5% bruto anual","cne")+
+    kc("","Alq. 2 amb.","US$440-680","segun barrio","cne")+
+  '</div>'+
+  '<div class="g2">'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--g)"></div>'+(S.ordenRenta==="renta"?"Renta bruta anual":"Anos de recupero")+'</div>'+bars+'</div>'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--a)"></div>Alquiler 2 ambientes y renta</div>'+
+      '<table class="tbl"><thead><tr><th>Barrio</th><th>Alq. 2 amb.</th><th>Renta</th><th>Recupero</th></tr></thead><tbody>'+tblRows+'</tbody></table>'+
+    '</div>'+
+  '</div>'+
+  ins("ia","⚠️","Renta y alquileres son estimaciones basadas en ZP index global (5,26%) y rangos de alquiler ZP ago 2025. ZP no publica la ratio renta por barrio para estos 11 especificamente.")+disc();
+}
+
+var INC_DATA = [
+  {n:"Palermo",      inc:650, z:"USAA/USAM", venta:3035, margen:"8-12%"},
+  {n:"Belgrano",     inc:700, z:"USAA",      venta:2806, margen:"6-10%"},
+  {n:"Belgrano R",   inc:720, z:"USAA",      venta:2950, margen:"6-10%"},
+  {n:"Nunez",        inc:600, z:"USAA/USAM", venta:2889, margen:"10-15%"},
+  {n:"Recoleta",     inc:700, z:"USAA/USAM", venta:2613, margen:"5-9%"},
+  {n:"Colegiales",   inc:550, z:"USAM",      venta:2628, margen:"12-16%"},
+  {n:"Saavedra",     inc:400, z:"USAB/USAM", venta:1991, margen:"14-18%"},
+  {n:"Villa Urquiza",inc:450, z:"USAM",      venta:2577, margen:"16-20%"},
+  {n:"Villa Crespo", inc:400, z:"USAM/USAA", venta:2085, margen:"14-18%"},
+  {n:"Chacarita",    inc:350, z:"USAM",      venta:2136, margen:"16-22%"},
+  {n:"Almagro",      inc:325, z:"USAM",      venta:1996, margen:"14-18%"},
+];
+
+function renderDevOport() {
+  var data = INC_DATA.slice();
+  if(S.ordenInc==="menor")  data.sort(function(a,b){return a.inc-b.inc;});
+  else if(S.ordenInc==="margen") data.sort(function(a,b){return parseInt(b.margen)-parseInt(a.margen);});
+  else data.sort(function(a,b){return b.inc-a.inc;});
+  var cards = data.map(function(d){
+    var mN = parseInt(d.margen);
+    var col = mN>=16?"var(--g)":mN>=12?"var(--b)":"var(--a)";
+    var bd = BARRIOS.find(function(b){return b.n===d.n;})||{};
+    return '<div class="opc">'+
+      '<div class="op-hd">'+
+        '<div><div class="op-nm">'+d.n+'</div><div class="op-meta" style="margin-top:6px">'+badge("da",d.z)+'</div></div>'+
+        '<div style="text-align:right"><div style="font-size:11px;color:var(--t3);margin-bottom:2px">margen est.</div><div class="op-sc" style="color:'+col+'">'+d.margen+'</div></div>'+
+      '</div>'+
+      '<div class="op-g">'+
+        '<div class="op-s"><div class="op-sl">Incidencia max.</div><div class="op-sv co">US$'+d.inc+'/m2</div></div>'+
+        '<div class="op-s"><div class="op-sl">Precio usado ZP</div><div class="op-sv cup">US$'+fmt(d.venta)+'/m2</div></div>'+
+        '<div class="op-s"><div class="op-sl">Suba ZP interanual</div><div class="op-sv cup">'+(bd.delta||"--")+'</div></div>'+
+        '<div class="op-s"><div class="op-sl">% pozo en barrio (ZP)</div><div class="op-sv">'+(bd.pzPct||"--")+'%</div></div>'+
+      '</div>'+
+    '</div>';
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("o","Costo constr. CABA","US$1.500/m2","Camara Argentina de Constr.","cdn")+
+    kc("o","Precio venta usado ZP","US$2.460/m2","CABA abr 2026","ca")+
+    kc("a","Mayor margen orientativo","Chacarita","16-22% — baja incidencia","ca")+
+    kc("b","Peor margen orientativo","Recoleta","5-9% — alta incidencia","cb")+
+  '</div>'+
+  '<div class="shd"><h2>Oportunidades developer — '+(S.ordenInc==="margen"?"por margen":S.ordenInc==="menor"?"menor incidencia":"mayor incidencia")+'</h2>'+
+  '<p>Incidencia max. = precio maximo del suelo segun metodo residual estimado</p></div>'+
+  cards+
+  ins("io","⚠️","Margen = (precio venta ZP - costo constr. US$1.500 - incidencia) / precio venta. Es una <strong>aproximacion orientativa</strong>. Precio de cierre es ~5-7% menor al publicado ZP.")+
+  ins("ig","💡","Barrios con menor incidencia y mayor suba (Chacarita, V.Urquiza, V.Crespo) tienen mejor ecuacion en 2026. Belgrano/Recoleta: alta incidencia comprime el margen.")+disc();
+}
+
+function renderDevIncidencia() {
+  var data = INC_DATA.slice();
+  if(S.ordenInc==="menor") data.sort(function(a,b){return a.inc-b.inc;});
+  else data.sort(function(a,b){return b.inc-a.inc;});
+  var max = Math.max.apply(null,data.map(function(d){return d.inc;}));
+  var bars = data.map(function(d){
+    var col = d.inc>=650?"var(--r)":d.inc>=500?"var(--o)":d.inc>=380?"var(--a)":"var(--g)";
+    return brRow(d.n+' <span style="font-size:10px;color:var(--t3)">'+d.z+'</span>', Math.round(d.inc/max*100), col, "US$"+d.inc+"/m2");
+  }).join("");
+  return '<div class="kgrid">'+
+    kc("o","Incidencia tope","Belgrano R","US$720/m2 construible","co")+
+    kc("o","Incidencia media","~US$525/m2","promedio 11 barrios","co")+
+    kc("a","Menor incidencia","Almagro","US$325/m2","ca")+
+    kc("b","Plusvalia UVA 2025","-51%","vs 2024 — oportunidad coyuntural","cup")+
+  '</div>'+
+  '<div class="shd"><h2>Incidencia del terreno — '+(S.ordenInc==="menor"?"menor a mayor":"mayor a menor")+'</h2><p>USD/m2 construible · estimacion de mercado 2025-2026</p></div>'+
+  '<div class="card" style="margin-bottom:16px">'+bars+'</div>'+
+  ins("io","⚡","Incidencia UVA (base de plusvalia Ley 6062) bajo ~51% en 2025 vs 2024. Iniciar tramites de prefactibilidad antes de fin de 2026 puede ahorrar decenas de miles de USD.")+
+  ins("ia","⚠️","Incidencias son estimaciones del mercado (Ambito, iProfesional, Terres.com.ar 2025-26). ZP no publica este dato directamente.")+disc();
+}
+
+function renderDevZonif() {
+  return '<div class="kgrid">'+
+    kc("o","USAA (Palermo/Belgrano/Recoleta)","hasta 68m","PB+12+retiro en avenidas","cne")+
+    kc("a","USAM (Colegiales/V.Crespo/Almagro)","17,20m","PB+5+2 retiros","cne")+
+    kc("b","USAB2 (Saavedra sectores)","11,20m","PB+3+1 retiro","cne")+
+    kc("r","Plusvalia tope Zona 4","35%","sobre m2 adicionales vs codigo ant.","cne")+
+  '</div>'+
+  '<div class="g2">'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--o)"></div>Zonificacion por barrio — CUR 2025</div>'+
+      '<table class="tbl"><thead><tr><th>Barrio</th><th>Zona pred.</th><th>Altura</th><th>Nota</th></tr></thead><tbody>'+
+      '<tr><td>Palermo</td><td>'+badge("dr","USAA")+'</td><td class="mn">hasta 68m</td><td style="font-size:11px;color:var(--t2)">avenidas; interior hasta 17m</td></tr>'+
+      '<tr><td>Belgrano / Belgrano R</td><td>'+badge("dr","USAA")+'</td><td class="mn">hasta 68m</td><td style="font-size:11px;color:var(--t2)">Cabildo USAA; interior USAM</td></tr>'+
+      '<tr><td>Nunez</td><td>'+badge("dr","USAA")+'</td><td class="mn">hasta 45m</td><td style="font-size:11px;color:var(--t2)">corredor Cabildo USAA</td></tr>'+
+      '<tr><td>Recoleta</td><td>'+badge("dr","USAA")+'</td><td class="mn">hasta 45m</td><td style="font-size:11px;color:var(--t2)">alta densidad historica</td></tr>'+
+      '<tr><td>Colegiales</td><td>'+badge("do","USAM")+'</td><td class="mn">17,20m</td><td style="font-size:11px;color:var(--t2)">PB+5; avenidas USAA</td></tr>'+
+      '<tr><td>Saavedra</td><td>'+badge("da","USAB2")+'</td><td class="mn">11,20m</td><td style="font-size:11px;color:var(--t2)">CUR dic24: restriccion en sectores</td></tr>'+
+      '<tr><td>Villa Urquiza</td><td>'+badge("do","USAM")+'</td><td class="mn">17,20m</td><td style="font-size:11px;color:var(--t2)">mix USAM/USAB por cuadricula</td></tr>'+
+      '<tr><td>Villa Crespo</td><td>'+badge("do","USAM")+'</td><td class="mn">17,20m</td><td style="font-size:11px;color:var(--t2)">avenidas USAA; interior USAM</td></tr>'+
+      '<tr><td>Chacarita</td><td>'+badge("do","USAM")+'</td><td class="mn">17,20m</td><td style="font-size:11px;color:var(--t2)">CUR dic24: parte bajo a USAB</td></tr>'+
+      '<tr><td>Almagro</td><td>'+badge("do","USAM")+'</td><td class="mn">17,20m</td><td style="font-size:11px;color:var(--t2)">Corredor Rivadavia USAA</td></tr>'+
+      '</tbody></table>'+
+    '</div>'+
+    '<div class="card"><div class="ct"><div class="cdot" style="background:var(--a)"></div>Plusvalia Ley 6062</div>'+
+      '<table class="tbl"><thead><tr><th>Zona</th><th>Alicuota</th><th>Sobre que se aplica</th></tr></thead><tbody>'+
+      '<tr><td>Zona 1</td><td class="mn cup">10%</td><td style="font-size:11px;color:var(--t2)">m2 adicionales vs codigo anterior</td></tr>'+
+      '<tr><td>Zona 2</td><td class="mn ca">18%</td><td style="font-size:11px;color:var(--t2)">m2 adicionales vs codigo anterior</td></tr>'+
+      '<tr><td>Zona 3</td><td class="mn co">27%</td><td style="font-size:11px;color:var(--t2)">m2 adicionales vs codigo anterior</td></tr>'+
+      '<tr><td>Zona 4</td><td class="mn cdn">35%</td><td style="font-size:11px;color:var(--t2)">m2 adicionales vs codigo anterior</td></tr>'+
+      '</tbody></table>'+
+      ins("io","💡","Incidencia UVA bajo 51% en 2025 vs 2024. Iniciar prefactibilidad ahora puede ahorrar decenas de miles de USD en plusvalia.")+
+      ins("ia","⚠️","CUR dic 2024: restriccion de alturas en sectores de Chacarita y Saavedra. Verificar prefactibilidad en GCBA antes de cerrar operacion.")+
+    '</div>'+
+  '</div>'+
+  '<div class="note">Fuente: CUR CABA 2025 (Ley 6099/18 + mod. dic 2024) · Ley 6062 plusvalia. La zonificacion varia por cuadricula — siempre verificar en GCBA antes de operar.</div>';
+}
+
+var RENDERS = {
+  precios:renderPrecios, segmentos:renderSegmentos, oferta:renderOferta,
+  evolucion:renderEvolucion, rentabilidad:renderRentabilidad,
+  "dev-oport":renderDevOport, "dev-incidencia":renderDevIncidencia, "dev-zonif":renderDevZonif,
+};
+
+function renderContent() {
+  var fn = RENDERS[S.rep];
+  var el = document.getElementById("content");
+  if(fn){
+    el.innerHTML = fn();
+    el.querySelectorAll(".bh").forEach(function(bh){
+      bh.addEventListener("click", function(){
+        var bd = bh.nextElementSibling;
+        var ch = bh.querySelector(".bh-ch");
+        if(bd){bd.classList.toggle("open");if(ch)ch.style.transform=bd.classList.contains("open")?"rotate(180deg)":"";}
+      });
+    });
+  }
+}
+
+renderFbar();
+renderContent();
+
+// ── ACTUALIZAR ────────────────────────────────────────────────────
+async function actualizarDatos() {
+  var btn = document.getElementById("btnActualizar");
+  var statusEl = document.getElementById("updateStatus");
+  btn.disabled = true;
+  btn.innerHTML = '<div class="upd-spinner"></div> Actualizando...';
+  statusEl.style.display = "flex";
+  statusEl.querySelector(".upd-msg").textContent = "Consultando ZonaProp via IA...";
+  statusEl.style.background = "";
+  statusEl.style.borderColor = "";
+  statusEl.querySelector(".upd-msg").style.color = "";
+
+  var prompt = 'Busca en zonaprop.com.ar los precios actuales por m2 de departamentos (usado, a estrenar y en pozo) para estos barrios de CABA: Palermo, Belgrano, Belgrano R, Nunez, Recoleta, Colegiales, Saavedra, Villa Urquiza, Villa Crespo, Chacarita, Almagro. Responde UNICAMENTE con un JSON valido, sin texto adicional, sin markdown. Formato: {"fecha":"MMM YYYY","promCABA":{"usado":NUMERO,"estrenar":NUMERO,"pozo":NUMERO},"barrios":[{"n":"Nombre","us":NUMERO,"es":NUMERO,"pz":NUMERO,"pzOk":true,"tot":NUMERO,"pzPct":NUMERO,"delta":"+X%","deltaN":NUMERO,"alq2":NUMERO,"fuente":"ZP MES ANO"}]} Todos los NUMERO son enteros. pzOk es false si pozo es promedio CABA. Solo los 11 barrios listados.';
+
+  try {
+    var resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1000,
+        tools: [{"type":"web_search_20250305","name":"web_search"}],
+        messages: [{role:"user", content: prompt}]
+      })
+    });
+    var data = await resp.json();
+
+    var msgs = [{role:"user",content:prompt},{role:"assistant",content:data.content}];
+    var fullText = "";
+
+    if (data.stop_reason === "tool_use") {
+      statusEl.querySelector(".upd-msg").textContent = "Buscando datos en ZonaProp...";
+      var toolResults = (data.content||[])
+        .filter(function(b){return b.type==="tool_use";})
+        .map(function(t){return {type:"tool_result",tool_use_id:t.id,content:"Searching ZonaProp for current real estate prices in CABA Buenos Aires 2025 2026"};});
+      msgs.push({role:"user",content:toolResults});
+      var resp2 = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({
+          model:"claude-sonnet-4-20250514",
+          max_tokens:1000,
+          tools:[{"type":"web_search_20250305","name":"web_search"}],
+          messages:msgs
+        })
+      });
+      var data2 = await resp2.json();
+      fullText = (data2.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+    } else {
+      fullText = (data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
+    }
+
+    var clean = fullText.replace(/```json|```/g,"").trim();
+    var start = clean.indexOf("{");
+    var end = clean.lastIndexOf("}");
+    if (start===-1||end===-1) throw new Error("JSON no encontrado en respuesta");
+    var newData = JSON.parse(clean.slice(start,end+1));
+    if (!newData.barrios||newData.barrios.length<5) throw new Error("Datos incompletos");
+
+    // Update BARRIOS array
+    newData.barrios.forEach(function(nb){
+      var idx = BARRIOS.findIndex(function(b){return b.n===nb.n;});
+      if(idx>=0) { Object.assign(BARRIOS[idx], nb); }
+    });
+
+    renderContent();
+    var fecha = newData.fecha || "reciente";
+    document.getElementById("lastUpdate").textContent = "Actualizado: " + fecha;
+    statusEl.querySelector(".upd-msg").textContent = "Datos actualizados · " + fecha;
+    statusEl.style.background = "rgba(59,224,138,.07)";
+    statusEl.style.borderColor = "rgba(59,224,138,.25)";
+    statusEl.querySelector(".upd-msg").style.color = "#a8f0cc";
+    setTimeout(function(){statusEl.style.display="none";},3500);
+
+  } catch(err) {
+    console.error("Update error:", err);
+    statusEl.querySelector(".upd-msg").textContent = "Error: " + err.message;
+    statusEl.style.background = "rgba(245,111,111,.07)";
+    statusEl.style.borderColor = "rgba(245,111,111,.25)";
+    statusEl.querySelector(".upd-msg").style.color = "#f0a8a8";
+    setTimeout(function(){statusEl.style.display="none";},5000);
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = '<span>↻</span> Actualizar datos';
+}
+
+</script>
+</body>
+</html>
