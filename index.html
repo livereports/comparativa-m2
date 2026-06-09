@@ -128,16 +128,24 @@ select{font-family:var(--fn)}
 .leg{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--t2)}
 .legsq{width:10px;height:10px;border-radius:2px;flex-shrink:0}
 ::-webkit-scrollbar{width:6px;height:6px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:3px}
-/* ── Update button ── */
-.upd-bar{display:flex;align-items:center;gap:10px;padding:8px 24px;background:var(--bg2);border-bottom:1px solid var(--bd);flex-shrink:0}
-#btnActualizar{font-size:12px;padding:6px 14px;border-radius:20px;border:1px solid rgba(59,224,138,.4);background:var(--gbg);color:var(--g);cursor:pointer;font-weight:500;transition:all .15s;display:flex;align-items:center;gap:6px}
-#btnActualizar:hover{background:rgba(59,224,138,.18);border-color:var(--g)}
-#btnActualizar:disabled{opacity:.5;cursor:default}
-#lastUpdate{font-size:11px;color:var(--t3);margin-left:4px}
-#updateStatus{display:none;align-items:center;gap:8px;padding:6px 12px;border-radius:var(--rs);border:1px solid var(--bd);font-size:12px;margin-left:auto}
-.upd-spinner{width:14px;height:14px;border:2px solid rgba(255,255,255,.15);border-top-color:var(--g);border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
+
 .upd-msg{color:var(--t2)}
+
+/* ── Comparison table ── */
+.cmp-table-wrap{overflow-x:auto;border-radius:var(--rx);border:1px solid var(--bd);margin-bottom:16px}
+.cmp-table{width:100%;border-collapse:collapse;min-width:580px}
+.cmp-table thead tr{background:var(--bg3);border-bottom:2px solid var(--bd2)}
+.th-barrio{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;min-width:140px;white-space:nowrap}
+.tc{padding:10px 12px;text-align:center;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;min-width:100px}
+.cmp-table tbody tr{border-bottom:1px solid var(--bd);transition:background .12s}
+.cmp-table tbody tr:last-child{border-bottom:none}
+.cmp-table tbody tr:hover{background:var(--bg3) !important}
+.td-barrio{padding:10px 16px;vertical-align:top}
+.barrio-label{font-size:13px;font-weight:600;color:var(--t1)}
+.cell-val{font-size:15px;font-weight:600;font-family:var(--mo);letter-spacing:-.02em;margin-bottom:4px}
+.cell-diff{font-size:10px;color:var(--t3);margin-top:3px}
+.spark-bar{height:4px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.spark-fill{height:100%;border-radius:2px;transition:width .5s ease}
 </style>
 </head>
 <body>
@@ -191,14 +199,7 @@ select{font-family:var(--fn)}
       <span class="pill b" id="tbMode">Solo dpto.</span>
     </div>
   </div>
-  <div class="upd-bar">
-    <button id="btnActualizar" onclick="actualizarDatos()">
-      <span>↻</span> Actualizar datos
-    </button>
-    <span id="lastUpdate">Datos: dic 2025 / abr 2026</span>
-    <div id="updateStatus">
-      <div class="upd-spinner"></div>
-      <span class="upd-msg">Consultando ZonaProp...</span>
+<span class="upd-msg">Consultando ZonaProp...</span>
     </div>
   </div>
   <div class="fbar" id="fbar"></div>
@@ -358,36 +359,69 @@ function renderPrecios() {
   var showUs = S.seg==="todos"||S.seg==="us";
   var showEs = S.seg==="todos"||S.seg==="es";
   var showPz = S.seg==="todos"||S.seg==="pz";
-  var maxVal = 0;
-  data.forEach(function(b){
-    if(showUs&&b.us>maxVal)maxVal=b.us;
-    if(showEs&&b.es>maxVal)maxVal=b.es;
-    if(showPz&&b.pz>maxVal)maxVal=b.pz;
-  });
-  var rows = data.map(function(b){
-    var hotB = b.deltaN>=13?badge("dg",b.delta):b.deltaN>=9?badge("da",b.delta):"";
-    var html = '<div class="bb"><div class="bh" style="grid-template-columns:150px 1fr 24px">' +
-      '<span class="bh-nm">'+b.n+(hotB?" "+hotB:"")+'</span><div></div><span class="bh-ch">▾</span></div>' +
-      '<div class="bd" style="padding:10px 16px 14px">';
-    if(showUs) html += brRow("Usado",Math.round(b.us/maxVal*100),C.us,"US$"+fmt(b.us)+"/m2");
-    if(showEs) html += brRow("A estrenar",Math.round(b.es/maxVal*100),C.es,"US$"+fmt(b.es)+"/m2");
-    if(showPz) html += brRow("En pozo"+(b.pzOk?"":" (*)"),Math.round(b.pz/maxVal*100),C.pz,"US$"+fmt(b.pz)+"/m2");
-    html += '<div class="bd-note" style="margin-top:8px">'+b.fuente+'</div></div></div>';
-    return html;
+
+  // build header
+  var thCols = "";
+  if(showUs) thCols += '<th class="tc" style="color:'+C.us+'">Usado<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
+  if(showEs) thCols += '<th class="tc" style="color:'+C.es+'">A estrenar<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
+  if(showPz) thCols += '<th class="tc" style="color:'+C.pz+'">En pozo<br><span style="font-weight:400;font-size:10px">USD/m2</span></th>';
+
+  var maxUs = Math.max.apply(null,data.map(function(b){return b.us;}));
+  var maxEs = Math.max.apply(null,data.map(function(b){return b.es;}));
+  var maxPz = Math.max.apply(null,data.map(function(b){return b.pz;}));
+  var maxDelta = Math.max.apply(null,data.map(function(b){return b.deltaN;}));
+
+  var rows = data.map(function(b, idx) {
+    var rowBg = idx%2===0 ? "" : "background:var(--bg3)";
+    var hotB = b.deltaN>=13
+      ? '<span class="dbd dg" style="font-size:9px;padding:1px 5px;margin-left:4px">HOT</span>'
+      : b.deltaN>=9 ? '<span class="dbd da" style="font-size:9px;padding:1px 5px;margin-left:4px">↑</span>' : "";
+
+    // spark bar for used price
+    var usPct = Math.round(b.us/maxUs*100);
+    var esPct = Math.round(b.es/maxEs*100);
+    var pzPct2 = Math.round(b.pz/maxPz*100);
+    var dPct  = Math.round(b.deltaN/maxDelta*100);
+    var dCol  = b.deltaN>=13?"var(--g)":b.deltaN>=9?"var(--b)":"var(--a)";
+
+    var tdUs = showUs ? '<td class="tc"><div class="cell-val" style="color:var(--t1)">'+fmt(b.us)+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+usPct+'%;background:'+C.us+'"></div></div></td>' : "";
+    var tdEs = showEs ? '<td class="tc"><div class="cell-val" style="color:'+C.es+'">'+fmt(b.es)+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+esPct+'%;background:'+C.es+'"></div></div><div class="cell-diff">+'+Math.round((b.es/b.us-1)*100)+'% vs usado</div></td>' : "";
+    var tdPz = showPz ? '<td class="tc"><div class="cell-val" style="color:'+C.pz+'">'+fmt(b.pz)+(b.pzOk?"":'<span title="Promedio CABA" style="color:var(--t3);font-size:10px"> *</span>')+'</div><div class="spark-bar"><div class="spark-fill" style="width:'+pzPct2+'%;background:'+C.pz+'"></div></div><div class="cell-diff">+'+Math.round((b.pz/b.us-1)*100)+'% vs usado</div></td>' : "";
+
+    return '<tr style="'+rowBg+'">'+
+      '<td class="td-barrio"><span class="barrio-label">'+b.n+'</span>'+hotB+'<div style="font-size:10px;color:var(--t3);margin-top:2px">'+b.fuente+'</div></td>'+
+      tdUs + tdEs + tdPz +
+      '<td class="tc">'+
+        '<div class="cell-val" style="color:'+dCol+'">'+b.delta+'</div>'+
+        '<div class="spark-bar"><div class="spark-fill" style="width:'+dPct+'%;background:'+dCol+'"></div></div>'+
+        '<div class="cell-diff">interanual</div>'+
+      '</td>'+
+      '<td class="tc">'+
+        '<div class="cell-val" style="color:var(--t2)">US$'+fmt(b.alq2)+'</div>'+
+        '<div class="cell-diff">2 amb./mes</div>'+
+      '</td>'+
+    '</tr>';
   }).join("");
+
   return '<div class="kgrid">'+
     kc("","Prom. CABA abr 2026","US$2.460/m2","+2,2% interanual","cup")+
     kc("b","Pozo CABA may 2025","US$2.893/m2","+22% desde nov 2023","cup")+
-    kc("a","Estrenar CABA may 2025","US$2.831/m2","+3,3% en 2025","cup")+
-    kc("","Usado CABA may 2025","US$2.211/m2","base del mercado","cne")+
+    kc("a","Mayor suba interanual","Villa Crespo","+18%","cup")+
+    kc("","Estrenar vs usado","+28% prom CABA","brecha historica","cdn")+
   '</div>'+
-  '<div class="shd"><h2>Precio USD/m2 · ordenado por: '+ {us:"usado",es:"a estrenar",pz:"pozo",delta:"mayor suba"}[S.orden]+'</h2>'+
-  '<p>11 barrios seleccionados</p></div>'+
-  '<div class="legend">'+
-    (showUs?'<span class="leg"><span class="legsq" style="background:'+C.us+'"></span>Usado</span>':'')+
-    (showEs?'<span class="leg"><span class="legsq" style="background:'+C.es+'"></span>A estrenar</span>':'')+
-    (showPz?'<span class="leg"><span class="legsq" style="background:'+C.pz+'"></span>En pozo (* = prom CABA)</span>':'')+
-  '</div>'+rows+disc();
+  '<div class="cmp-table-wrap">'+
+  '<table class="cmp-table">'+
+    '<thead><tr>'+
+      '<th class="th-barrio">Barrio</th>'+
+      thCols+
+      '<th class="tc">Suba 12m<br><span style="font-weight:400;font-size:10px">interanual</span></th>'+
+      '<th class="tc">Alquiler<br><span style="font-weight:400;font-size:10px">2 amb.</span></th>'+
+    '</tr></thead>'+
+    '<tbody>'+rows+'</tbody>'+
+  '</table>'+
+  '</div>'+
+  '<div style="font-size:11px;color:var(--t3);margin-top:10px">* Pozo = promedio CABA (ZP may 2025): ZonaProp no desglosa ese dato por barrio en esos casos.</div>'+
+  disc();
 }
 
 function renderSegmentos() {
@@ -679,92 +713,7 @@ function renderContent() {
 renderFbar();
 renderContent();
 
-// ── ACTUALIZAR ────────────────────────────────────────────────────
-async function actualizarDatos() {
-  var btn = document.getElementById("btnActualizar");
-  var statusEl = document.getElementById("updateStatus");
-  btn.disabled = true;
-  btn.innerHTML = '<div class="upd-spinner"></div> Actualizando...';
-  statusEl.style.display = "flex";
-  statusEl.querySelector(".upd-msg").textContent = "Consultando ZonaProp via IA...";
-  statusEl.style.background = "";
-  statusEl.style.borderColor = "";
-  statusEl.querySelector(".upd-msg").style.color = "";
 
-  var prompt = 'Busca en zonaprop.com.ar los precios actuales por m2 de departamentos (usado, a estrenar y en pozo) para estos barrios de CABA: Palermo, Belgrano, Belgrano R, Nunez, Recoleta, Colegiales, Saavedra, Villa Urquiza, Villa Crespo, Chacarita, Almagro. Responde UNICAMENTE con un JSON valido, sin texto adicional, sin markdown. Formato: {"fecha":"MMM YYYY","promCABA":{"usado":NUMERO,"estrenar":NUMERO,"pozo":NUMERO},"barrios":[{"n":"Nombre","us":NUMERO,"es":NUMERO,"pz":NUMERO,"pzOk":true,"tot":NUMERO,"pzPct":NUMERO,"delta":"+X%","deltaN":NUMERO,"alq2":NUMERO,"fuente":"ZP MES ANO"}]} Todos los NUMERO son enteros. pzOk es false si pozo es promedio CABA. Solo los 11 barrios listados.';
-
-  try {
-    var resp = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({
-        model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
-        tools: [{"type":"web_search_20250305","name":"web_search"}],
-        messages: [{role:"user", content: prompt}]
-      })
-    });
-    var data = await resp.json();
-
-    var msgs = [{role:"user",content:prompt},{role:"assistant",content:data.content}];
-    var fullText = "";
-
-    if (data.stop_reason === "tool_use") {
-      statusEl.querySelector(".upd-msg").textContent = "Buscando datos en ZonaProp...";
-      var toolResults = (data.content||[])
-        .filter(function(b){return b.type==="tool_use";})
-        .map(function(t){return {type:"tool_result",tool_use_id:t.id,content:"Searching ZonaProp for current real estate prices in CABA Buenos Aires 2025 2026"};});
-      msgs.push({role:"user",content:toolResults});
-      var resp2 = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {"Content-Type":"application/json"},
-        body: JSON.stringify({
-          model:"claude-sonnet-4-20250514",
-          max_tokens:1000,
-          tools:[{"type":"web_search_20250305","name":"web_search"}],
-          messages:msgs
-        })
-      });
-      var data2 = await resp2.json();
-      fullText = (data2.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
-    } else {
-      fullText = (data.content||[]).filter(function(b){return b.type==="text";}).map(function(b){return b.text;}).join("");
-    }
-
-    var clean = fullText.replace(/```json|```/g,"").trim();
-    var start = clean.indexOf("{");
-    var end = clean.lastIndexOf("}");
-    if (start===-1||end===-1) throw new Error("JSON no encontrado en respuesta");
-    var newData = JSON.parse(clean.slice(start,end+1));
-    if (!newData.barrios||newData.barrios.length<5) throw new Error("Datos incompletos");
-
-    // Update BARRIOS array
-    newData.barrios.forEach(function(nb){
-      var idx = BARRIOS.findIndex(function(b){return b.n===nb.n;});
-      if(idx>=0) { Object.assign(BARRIOS[idx], nb); }
-    });
-
-    renderContent();
-    var fecha = newData.fecha || "reciente";
-    document.getElementById("lastUpdate").textContent = "Actualizado: " + fecha;
-    statusEl.querySelector(".upd-msg").textContent = "Datos actualizados · " + fecha;
-    statusEl.style.background = "rgba(59,224,138,.07)";
-    statusEl.style.borderColor = "rgba(59,224,138,.25)";
-    statusEl.querySelector(".upd-msg").style.color = "#a8f0cc";
-    setTimeout(function(){statusEl.style.display="none";},3500);
-
-  } catch(err) {
-    console.error("Update error:", err);
-    statusEl.querySelector(".upd-msg").textContent = "Error: " + err.message;
-    statusEl.style.background = "rgba(245,111,111,.07)";
-    statusEl.style.borderColor = "rgba(245,111,111,.25)";
-    statusEl.querySelector(".upd-msg").style.color = "#f0a8a8";
-    setTimeout(function(){statusEl.style.display="none";},5000);
-  }
-
-  btn.disabled = false;
-  btn.innerHTML = '<span>↻</span> Actualizar datos';
-}
 
 </script>
 </body>
